@@ -90,14 +90,20 @@ macOS and mobile endpoints are not supported and are not currently planned.
 
 This project follows a vertical-slice-first roadmap: a working
 telemetry → detection → alert path was built and validated before response
-execution, and response execution was built and tested end to end (including
-a genuine production-path `KILL_PROCESS` test against the real detection
-engine) before broader telemetry/response expansion. Some response actions
-(`COLLECT_PROCESS_INFO`, `COLLECT_NETWORK_CONNECTIONS`) are implemented and
-tested at the Manager/Response Engine boundary but are not yet triggered
-automatically by every production detection rule — see each repository's
-README and, for the Manager, `docs/RESPONSE_ENGINE_STATE.md` for the current,
-honest status.
+execution, and response execution was built and tested end to end against the
+real, unmodified detection and response engines before broader
+telemetry/response expansion. Reachability from a real ingested event varies
+by rule: `QUARANTINE_FILE` (via production rule `DET-PERS-007`) is proven
+reachable through a real `POST /api/v1/ingest` call with no internal bypass;
+`KILL_PROCESS`'s dispatch/execution/audit machinery is proven correct once an
+alert exists, but its only previously-cited trigger rule (`DET-INJ-001`)
+requires process-injection telemetry no current endpoint collector produces,
+so that specific path is not reachable from a real endpoint today. Some
+response actions (`COLLECT_PROCESS_INFO`, `COLLECT_NETWORK_CONNECTIONS`) are
+implemented and tested at the Manager/Response Engine boundary but are not
+yet triggered automatically by every production detection rule — see each
+repository's README and, for the Manager, `docs/RESPONSE_ENGINE_STATE.md` for
+the current, honest status.
 
 ## Documentation
 
