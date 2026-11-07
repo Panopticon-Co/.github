@@ -13,6 +13,9 @@ This is a capstone/research project, not a commercial product. Maturity varies b
 repository, and every repository's README states its own validated scope and
 known limitations rather than hiding them.
 
+**Project site: [panopticon-co.github.io](https://panopticon-co.github.io)** — architecture,
+components, all 22 diagrams and team statistics in one place.
+
 <p align="center">
   <img src="assets/console-overview.png" alt="Panopticon Console security overview: pipeline counters, severity totals and the live alert feed" width="900">
   <br>
@@ -26,7 +29,7 @@ known limitations rather than hiding them.
 | **Repositories** | 8 public components + organization profile (plus 2 private dashboard prototypes) |
 | **Endpoints** | Windows agent "Officer" (C++20) · Linux sensor `panopticon-sensord` (C++20, eBPF) |
 | **Backend** | FastAPI Manager with SQLite (WAL) stores, vendored detection and response engines |
-| **Detection** | 74 MITRE ATT&CK–mapped YAML rule files, provenance-graph correlation, UEBA rarity scoring, an experimental ML scoring stage |
+| **Detection** | 69 MITRE ATT&CK–mapped detection rules in 16 categories, provenance-graph correlation, UEBA rarity scoring, an experimental ML scoring stage |
 | **Response** | Closed vocabulary of 7 typed actions, two authorization tiers, signed commands and evidence |
 | **Contributors** | 4 team members · 674 commits on default branches (see [Team and contributions](#team-and-contributions)) |
 
@@ -114,13 +117,15 @@ anything, and only after Manager authorization.
 - **A closed response vocabulary.** `KILL_PROCESS`, `COLLECT_PROCESS_INFO`,
   `COLLECT_NETWORK_CONNECTIONS`, `COLLECT_FILE`, `QUARANTINE_FILE`, `ISOLATE_HOST`,
   `RELEASE_HOST_ISOLATION` — there is no path to arbitrary remote execution.
-- **Two authorization tiers.** Read-only collection may run automatically;
-  destructive actions require explicit analyst approval.
+- **Two authorization tiers.** Only `COLLECT_PROCESS_INFO` and
+  `COLLECT_NETWORK_CONNECTIONS` may run automatically; every other action,
+  including file collection, requires explicit analyst approval.
 - **PID-reuse protection.** Process-targeted actions carry the process start time
   (and, on Windows, the boot binding) so an action can never land on a recycled PID.
-- **Signed commands and evidence.** Endpoint-enrolled keys, verification on every
-  retrieval, and a chained audit trail of who requested, approved, dispatched and
-  viewed what.
+- **Signed commands and evidence.** The Linux sensor executes only Manager-signed
+  (ES256) commands; evidence is signed with endpoint-enrolled keys and verified on
+  every retrieval; and a SHA-256 hash-chained audit trail records who requested,
+  approved, dispatched and viewed what.
 - **Versioned wire contracts.** Every producer and consumer is checked against the
   golden fixtures in `panopticon-contracts`.
 
@@ -129,18 +134,18 @@ anything, and only after Manager authorization.
 <table>
   <tr>
     <td align="center"><a href="https://github.com/shreyastek"><img src="https://github.com/shreyastek.png?size=100" width="72" alt=""><br><b>Shreyas Tekawade</b></a></td>
-    <td align="center"><a href="https://github.com/RishiBose08"><img src="https://github.com/RishiBose08.png?size=100" width="72" alt=""><br><b>Rishi Bose</b></a></td>
     <td align="center"><a href="https://github.com/sokhiaryan"><img src="https://github.com/sokhiaryan.png?size=100" width="72" alt=""><br><b>Aryan Sokhi</b></a></td>
     <td align="center"><a href="https://github.com/Adityasingh230058"><img src="https://github.com/Adityasingh230058.png?size=100" width="72" alt=""><br><b>Aditya Singh</b></a></td>
+    <td align="center"><a href="https://github.com/RishiBose08"><img src="https://github.com/RishiBose08.png?size=100" width="72" alt=""><br><b>Rishi Bose</b></a></td>
   </tr>
 </table>
 
 | Member | Commits | Lines added | Lines deleted | Of which source code added |
 |---|---:|---:|---:|---:|
 | Shreyas Tekawade | 377 | 126,372 | 6,449 | 96,598 |
-| Rishi Bose | 148 | 71,324 | 2,333 | 26,663 |
-| Aryan Sokhi | 85 | 35,633 | 25,904 | 29,745 |
+| Aryan Sokhi³ | 230 | 106,332 | 27,915 | 55,926 |
 | Aditya Singh | 37 | 29,709 | 5,596 | 26,726 |
+| Rishi Bose³ | 3 | 625 | 322 | 482 |
 | Other identities¹ | 27 | 7,763 | 374 | 5,829 |
 | **Total** | **674** | **270,801** | **40,656** | **185,561** |
 
@@ -148,24 +153,24 @@ anything, and only after Manager authorization.
 pie showData
     title Commits by member (default branches)
     "Shreyas Tekawade" : 377
-    "Rishi Bose" : 148
-    "Aryan Sokhi" : 85
+    "Aryan Sokhi" : 230
     "Aditya Singh" : 37
+    "Rishi Bose" : 3
     "Other identities" : 27
 ```
 
 **Commits per repository**
 
-| Repository | Shreyas | Rishi | Aryan | Aditya | Other¹ | Total |
+| Repository | Shreyas | Aryan³ | Aditya | Rishi³ | Other¹ | Total |
 |---|---:|---:|---:|---:|---:|---:|
 | panopticon-linux-agent | 209 | 7 | – | – | – | 216 |
-| panopticon-manager² | 56 | 39 | 21 | – | 12 | 128 |
-| panopticon-detection-engine | 38 | – | 52 | 27 | 8 | 125 |
-| panopticon-agent | 32 | 37 | 11 | – | – | 80 |
+| panopticon-manager² | 56 | 60 | – | – | 12 | 128 |
+| panopticon-detection-engine | 38 | 52 | 27 | – | 8 | 125 |
+| panopticon-agent | 32 | 48 | – | – | – | 80 |
 | panopticon-contracts | 11 | 30 | – | – | – | 41 |
 | panopticon-response-engine | 11 | 19 | – | – | 3 | 33 |
-| panopticon-console | 9 | 15 | – | – | 4 | 28 |
-| panopticon-diagrams | 9 | 1 | 1 | 2 | – | 13 |
+| panopticon-console | 9 | 13 | – | 2 | 4 | 28 |
+| panopticon-diagrams | 9 | 1 | 2 | 1 | – | 13 |
 | private dashboard prototypes (2) | – | – | – | 8 | – | 8 |
 | .github | 2 | – | – | – | – | 2 |
 
@@ -189,6 +194,9 @@ Snapshot taken 2026-11-07 from each repository's default branch.
   and test fixtures.
 - ¹ "Other identities" are commits made under shared or automation identities
   rather than a personal account.
+- ³ Commits made under Rishi Bose's Git identity on or after 2026-10-01 are
+  credited to Aryan Sokhi, to whom the team attributes that work; earlier
+  commits stay with Rishi Bose. Git history itself is unchanged.
 
 Lines changed measure churn, not effort or quality: a refactor that deletes
 code is as valuable as one that adds it.
